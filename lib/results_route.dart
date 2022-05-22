@@ -28,7 +28,7 @@ class ResultsRoute extends StatefulWidget {
 
   @override
   State<ResultsRoute> createState() => _ResultsRouteState();
-  
+
 }
 
 class _ResultsRouteState extends State<ResultsRoute> {
@@ -82,23 +82,20 @@ class _ResultsRouteState extends State<ResultsRoute> {
                   }),
             );
 
-          } else if (snapshot.hasError) {
-            return Text('${snapshot.error}');
           }
 
           // By default, show a loading spinner.
           return const CircularProgressIndicator();
-        },
-      ),
+        }),
     );
   }
 
   Future<void> _refresh() async{
-    await fetchResults(widget.classId,widget.raceId);
-    _buildList();
+    setState (() {
+      futureResults = fetchResults(widget.classId,widget.raceId);
+    });
     return Future.delayed(
-      const Duration(seconds: 1),
+        Duration(seconds:8),
     );
-
   }
 }
