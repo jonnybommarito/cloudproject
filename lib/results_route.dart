@@ -64,11 +64,27 @@ class _ResultsRouteState extends State<ResultsRoute> {
                   itemBuilder: (context, index) {
                     if (results[index]["id"] != null) {
                       return Card(
-                          child: ListTile(
-                            title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}"),
-                            subtitle: Text(results[index]["id"]),
+                          child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget> [ListTile(
+                            title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(fontSize:18)),
+                            subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
                             dense: true,
-                          )
+                          ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                  const SizedBox(width: 8),
+                                  if(results[index]["Organisation"]["Name"] != null)
+                                    TextButton(
+                                      child: Text(results[index]["Organisation"]["Name"]),
+                                      onPressed: () {/* ... */},
+                                    ),
+                                const SizedBox(width: 8),
+                              ],
+                            ),
+                            ]
+                          ),
                       );
                     } else {
                       return Card(
@@ -90,7 +106,8 @@ class _ResultsRouteState extends State<ResultsRoute> {
     );
   }
 
-  Future<void> _refresh() async{
+  Future<void> _refresh() {
+
     setState (() {
       futureResults = fetchResults(widget.classId,widget.raceId);
     });
