@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'globals.dart';
+import './organisation_route.dart';
 
 Future<List<dynamic>> fetchResults(String classId,String raceId) async {
   final response = await http.get(Uri.parse('$apiUrl/results?id=$raceId&class=$classId'));
@@ -78,7 +79,15 @@ class _ResultsRouteState extends State<ResultsRoute> {
                                   if(results[index]["Organisation"]["Name"] != null)
                                     TextButton(
                                       child: Text(results[index]["Organisation"]["Name"]),
-                                      onPressed: () {/* ... */},
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                OrganisationRoute(widget.raceId,results[index]["Organisation"]["Id"],results[index]["Organisation"]["Name"]),
+                                          ),
+                                        );
+                                      },
                                     ),
                                 const SizedBox(width: 8),
                               ],
@@ -89,8 +98,8 @@ class _ResultsRouteState extends State<ResultsRoute> {
                     } else {
                       return Card(
                         child: ListTile(
-                          title: Text("#${index+1}: ${results[index]["Name"]['Given']} ${results[index]["Name"]['Family']}"),
-                          subtitle: Text('Not defined'),
+                          title: Text("#${results[index]["Position"]}: ${results[index]["Name"]['Given']} ${results[index]["Name"]['Family']}",style: TextStyle(fontSize:18)),
+                          subtitle: Text('Not defined',style: TextStyle(fontSize:16)),
                           dense: true,
                         ),
                       );
