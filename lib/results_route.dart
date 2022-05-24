@@ -34,6 +34,7 @@ class ResultsRoute extends StatefulWidget {
 
 class _ResultsRouteState extends State<ResultsRoute> {
   late Future<List<dynamic>> futureResults;
+  List<dynamic> difResults = List<dynamic>.empty(growable:true);
 
   @override
   void initState() {
@@ -115,10 +116,16 @@ class _ResultsRouteState extends State<ResultsRoute> {
     );
   }
 
-  Future<void> _refresh() {
-
+  Future<void> _refresh() async {
+    difResults.clear();//Clear the list everytime it enters the function to avoid repetition of already found differences
+    List<dynamic> oldFutureResults =  await futureResults;
     setState (() {
-      futureResults = fetchResults(widget.classId,widget.raceId);
+      futureResults = fetchResults(widget.classId,widget.raceId).then((value){
+        for (dynamic el in value) {
+         if(!oldFutureResults.contains(el)) difResults.add(el); 
+        }
+        return value;
+      });
     });
     return Future.delayed(
         Duration(seconds:8),
