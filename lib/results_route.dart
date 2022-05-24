@@ -34,6 +34,9 @@ class ResultsRoute extends StatefulWidget {
 
 class _ResultsRouteState extends State<ResultsRoute> {
   late Future<List<dynamic>> futureResults;
+  Iterable diff = [];
+  var results = [];
+  var oldResult = [];
 
   @override
   void initState() {
@@ -57,7 +60,7 @@ class _ResultsRouteState extends State<ResultsRoute> {
         future: futureResults,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            var results = snapshot.data!;
+            results = snapshot.data!;
             return RefreshIndicator(
               onRefresh: _refresh,
               child: ListView.builder(
@@ -67,11 +70,18 @@ class _ResultsRouteState extends State<ResultsRoute> {
                       return Card(
                           child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: <Widget> [ListTile(
-                            title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(fontSize:18)),
-                            subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
+                          children: <Widget> [
+                            diff.contains(results[index])?
+                            ListTile(
+                            title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(color: Colors.red,fontSize:18)),
+                              subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
                             dense: true,
-                          ),
+                          ):
+                            ListTile(
+                              title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(fontSize:18)),
+                              subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
+                              dense: true,
+                            ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: <Widget>[
@@ -97,8 +107,15 @@ class _ResultsRouteState extends State<ResultsRoute> {
                       );
                     } else {
                       return Card(
-                        child: ListTile(
-                          title: Text("#${results[index]["Position"]}: ${results[index]["Name"]['Given']} ${results[index]["Name"]['Family']}",style: TextStyle(fontSize:18)),
+
+                        child:
+                        diff.contains(results[index])?
+                        ListTile(
+                          title: Text("#${results[index]["Position"]}: ${results[index]["Name"]['Given']} ${results[index]["Name"]['Family']}",style: TextStyle(color: Colors.red,fontSize:18)),
+                          subtitle: Text('Not defined',style: TextStyle(fontSize:16)),
+                          dense: true,
+                        ): ListTile(
+                          title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(color: Colors.black,fontSize:18)),
                           subtitle: Text('Not defined',style: TextStyle(fontSize:16)),
                           dense: true,
                         ),
@@ -115,11 +132,17 @@ class _ResultsRouteState extends State<ResultsRoute> {
     );
   }
 
-  Future<void> _refresh() {
+  Future<void> _refresh() async{
+
+    oldResult = new List.from(results);
 
     setState (() {
       futureResults = fetchResults(widget.classId,widget.raceId);
     });
+    var temp = await futureResults;
+    print('OLD: $oldResult');
+    diff = temp.where((el)=>!oldResult.contains(el));
+    print('DIFF: $diff');
     return Future.delayed(
         Duration(seconds:8),
     );
