@@ -17,8 +17,6 @@ Future<List<dynamic>> fetchResults(String classId,String raceId) async {
     // then throw an exception.
     throw Exception('Failed to load classes');
   }
-
-
 }
 
 
@@ -34,8 +32,8 @@ class ResultsRoute extends StatefulWidget {
 
 class _ResultsRouteState extends State<ResultsRoute> {
   late Future<List<dynamic>> futureResults;
-  Iterable diff = [];
-  var results = [];
+  var difResults = [];
+  List<dynamic> results = [];
   var oldResult = [];
 
   @override
@@ -71,14 +69,14 @@ class _ResultsRouteState extends State<ResultsRoute> {
                           child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget> [
-                            diff.contains(results[index])?
+                            !difResults.contains(results[index]['id'])?
                             ListTile(
                             title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(color: Colors.red,fontSize:18)),
                               subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
                             dense: true,
                           ):
                             ListTile(
-                              title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(fontSize:18)),
+                              title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(color: Colors.black,fontSize:18)),
                               subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
                               dense: true,
                             ),
@@ -107,9 +105,8 @@ class _ResultsRouteState extends State<ResultsRoute> {
                       );
                     } else {
                       return Card(
-
                         child:
-                        diff.contains(results[index])?
+                        !difResults.contains(results[index]['id'])?
                         ListTile(
                           title: Text("#${results[index]["Position"]}: ${results[index]["Name"]['Given']} ${results[index]["Name"]['Family']}",style: TextStyle(color: Colors.red,fontSize:18)),
                           subtitle: Text('Not defined',style: TextStyle(fontSize:16)),
@@ -132,19 +129,18 @@ class _ResultsRouteState extends State<ResultsRoute> {
     );
   }
 
-  Future<void> _refresh() async{
-
-    oldResult = new List.from(results);
-
+  Future<void> _refresh() async {
+    difResults.clear();//Clear the list everytime it enters the function to avoid repetition of already found differences
+    oldResult = await futureResults;
+    for (dynamic v in oldResult) {
+      difResults.add(v['id']);
+    }
     setState (() {
       futureResults = fetchResults(widget.classId,widget.raceId);
     });
-    var temp = await futureResults;
-    print('OLD: $oldResult');
-    diff = temp.where((el)=>!oldResult.contains(el));
-    print('DIFF: $diff');
+
     return Future.delayed(
-        Duration(seconds:8),
+      Duration(seconds:8),
     );
   }
 }
