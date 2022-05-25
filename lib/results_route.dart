@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'globals.dart';
@@ -52,6 +52,48 @@ class _ResultsRouteState extends State<ResultsRoute> {
     );
   }
 
+
+  Widget getCard(id,name,surname,position,organisationName,organisationID) {
+    var sub = '';
+    var color ;
+    var icon;
+    id == null ? {sub = 'Not defined',icon= FaIcon(FontAwesomeIcons.exclamation,size: 40,color: Colors.red)} : sub = id ;
+    !difResults.contains(id)? color = Colors.red: color = Colors.black;
+    return Card(
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget> [
+            ListTile(
+              title: Text("#${position}: ${name} ${surname}",style: TextStyle(color: color,fontSize:18)),
+              subtitle: Text(sub,style: TextStyle(fontSize:16)),
+              trailing: icon,
+              dense: true,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                const SizedBox(width: 8),
+                if(organisationName != null)
+                  TextButton(
+                    child: Text(organisationName),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              OrganisationRoute(widget.raceId,organisationID,organisationName),
+                        ),
+                      );
+                    },
+                  ),
+                const SizedBox(width: 8),
+              ],
+            ),
+          ]
+      ),
+    );
+  }
+
   Widget _buildList() {
     return Center(
       child: FutureBuilder<List<dynamic>>(
@@ -64,60 +106,7 @@ class _ResultsRouteState extends State<ResultsRoute> {
               child: ListView.builder(
                   itemCount: results.length,
                   itemBuilder: (context, index) {
-                    if (results[index]["id"] != null) {
-                      return Card(
-                          child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget> [
-                            !difResults.contains(results[index]['id'])?
-                            ListTile(
-                            title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(color: Colors.red,fontSize:18)),
-                              subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
-                            dense: true,
-                          ):
-                            ListTile(
-                              title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(color: Colors.black,fontSize:18)),
-                              subtitle: Text(results[index]["id"],style: TextStyle(fontSize:16)),
-                              dense: true,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                  const SizedBox(width: 8),
-                                  if(results[index]["Organisation"]["Name"] != null)
-                                    TextButton(
-                                      child: Text(results[index]["Organisation"]["Name"]),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                OrganisationRoute(widget.raceId,results[index]["Organisation"]["Id"],results[index]["Organisation"]["Name"]),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                const SizedBox(width: 8),
-                              ],
-                            ),
-                            ]
-                          ),
-                      );
-                    } else {
-                      return Card(
-                        child:
-                        !difResults.contains(results[index]['id'])?
-                        ListTile(
-                          title: Text("#${results[index]["Position"]}: ${results[index]["Name"]['Given']} ${results[index]["Name"]['Family']}",style: TextStyle(color: Colors.red,fontSize:18)),
-                          subtitle: Text('Not defined',style: TextStyle(fontSize:16)),
-                          dense: true,
-                        ): ListTile(
-                          title: Text("#${results[index]["Position"]}: ${results[index]["Name"]["Given"]} ${results[index]["Name"]["Family"]}",style: TextStyle(color: Colors.black,fontSize:18)),
-                          subtitle: Text('Not defined',style: TextStyle(fontSize:16)),
-                          dense: true,
-                        ),
-                      );
-                    }
+                    return getCard(results[index]["id"],results[index]["Name"]["Given"],results[index]["Name"]["Family"],results[index]["Position"],results[index]["Organisation"]["Name"],results[index]["Organisation"]["Id"]);
                   }),
             );
 
@@ -133,7 +122,9 @@ class _ResultsRouteState extends State<ResultsRoute> {
     difResults.clear();//Clear the list everytime it enters the function to avoid repetition of already found differences
     oldResult = await futureResults;
     for (dynamic v in oldResult) {
-      difResults.add(v['id']);
+      if( v['id'] != null){
+        difResults.add(v['id']);
+      }
     }
     setState (() {
       futureResults = fetchResults(widget.classId,widget.raceId);
